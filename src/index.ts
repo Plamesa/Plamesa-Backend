@@ -1,5 +1,8 @@
-export function holaMundo(cadena: string): string {
-  return cadena;
-}
+// sudo /home/usuario/mongodb/bin/mongod --dbpath /home/usuario/mongodb-data/
+import { app } from "./app.js";
 
-//console.log(holaMundo("Que"))
+const PORT = process.env.PORT || 3000;
+
+app.listen(+PORT, () => {
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
+});
