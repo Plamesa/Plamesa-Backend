@@ -19,7 +19,7 @@ describe("Modelo Ingredient", () => {
         grupoAlimenticio: "Frutas y derivados"
       })
       .expect(500);
-  });
+  }); 
 
   /*it("Debe recibir un error porque el nombre científico es obligatorio", async () => {
     await request(app)
