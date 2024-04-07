@@ -6,11 +6,12 @@
   "type": "module",
   "scripts": {
     "start": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "build": "tsc",
     "format": "npx prettier --write src/",
     "dev": "tsc-watch --onSuccess \"env-cmd -f ./config/dev.env node dist/index.js\"",
     "devAtlas": "tsc-watch --onSuccess \"env-cmd -f ./config/atlas.env node dist/index.js\"",
-    "build": "tsc",
-    "test": "env-cmd -f ./config/test.env mocha --exit"
+    "test": "env-cmd -f ./config/test.env mocha --exit",
+    "coverage": "c8 npm test && c8 report --reporter=lcov"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
+    "c8": "^9.1.0",
     "chai": "^5.1.0",
     "env-cmd": "^10.1.0",
     "eslint": "^8.57.0",
