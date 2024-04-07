@@ -1,4 +1,4 @@
-// sudo /home/usuario/mongodb/bin/mongod --dbpath /home/usuario/mongodb-data/
+// mongod --dbpath /home/ivan/mongodb-data/
 import { app } from "./app.js";
 
 const PORT = process.env.PORT || 3000;

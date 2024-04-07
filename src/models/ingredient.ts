@@ -1,16 +1,27 @@
-import { Document, Schema, model } from 'mongoose';
-//import { UsuarioDocumentInterface } from './usuario.js';
+import { Document, Schema, model } from "mongoose";
+import { GrupoAlimenticio } from "./enum/grupoAlimenticio.js";
+import { Alergeno } from "./enum/alergeno.js";
+import { IncompatibilidadAlimenticia } from "./enum/incompatibilidadAlimenticia.js";
+import {
+  Nutriente,
+  NutrientesTipos,
+  getUnitFromName,
+} from "./enum/nutrientes.js";
 
-
+// Definición de la interfaz de documento de ingrediente
 export interface IngredientDocumentInterface extends Document {
-  ID: number,
-  nombre: string,
-  cantidad: number,
-  unidad: string,
-  coste: number,
-  //usuariosRealizaron: UsuarioDocumentInterface[],
+  ID: number;
+  nombre: string;
+  cantidad: number;
+  unidad: string;
+  costeEstimado: number;
+  grupoAlimenticio: GrupoAlimenticio;
+  alergenos: Alergeno[];
+  incompatibilidadesAlimenticias: IncompatibilidadAlimenticia[];
+  nutrientes: Nutriente[];
 }
 
+// Definición del esquema de Mongoose para el ingrediente
 const IngredientSchema = new Schema<IngredientDocumentInterface>({
   ID: {
     type: Number,
@@ -19,48 +30,69 @@ const IngredientSchema = new Schema<IngredientDocumentInterface>({
   },
   nombre: {
     type: String,
+    unique: true,
     required: true,
     trim: true,
-    uniqued: true,
   },
   cantidad: {
     type: Number,
     required: true,
+    default: 100,
   },
   unidad: {
     type: String,
     required: true,
     trim: true,
+    default: "gr",
   },
-  coste: {
+  costeEstimado: {
     type: Number,
     required: true,
     trim: true,
     validate: (value: number) => {
       if (value < 0) {
-        throw new Error('El coste no puede ser negativo');
+        throw new Error("El coste no puede ser negativo");
       }
     },
   },
-  /*longitud: {
-    type: Number,
-    required: true,
-    validate: (value: number) => {
-      if (value < 0) {
-        throw new Error('La longitud no puede ser negativa');
-      }
-    },
-  },*/
-  /*usuariosRealizaron: {
-    type: [Schema.Types.ObjectId],
-    required: true,
-    ref: 'Usuario',
-  },*/
-  /*tipoActividad: {
+  grupoAlimenticio: {
     type: String,
     trim: true,
-    enum: ['bicicleta', 'correr'],
-  },*/
+    required: true,
+    enum: Object.values(GrupoAlimenticio),
+  },
+  alergenos: {
+    type: [String],
+    enum: Object.values(Alergeno),
+    trim: true,
+  },
+  incompatibilidadesAlimenticias: {
+    type: [String],
+    enum: Object.values(IncompatibilidadAlimenticia),
+    trim: true,
+  },
+  nutrientes: {
+    type: [
+      {
+        nombre: {
+          type: String,
+          enum: Object.values(NutrientesTipos),
+          trim: true,
+        },
+        cantidad: Number,
+        unidad: {
+          type: String,
+          default: function (this: { nombre: NutrientesTipos }) {
+            return getUnitFromName(this.nombre);
+          },
+        },
+      },
+    ],
+    _id: false,
+  },
 });
 
-export const Ingredient = model<IngredientDocumentInterface>('Ingredient', IngredientSchema);
+export const Ingredient = model<IngredientDocumentInterface>(
+  "Ingredient",
+  IngredientSchema,
+);
