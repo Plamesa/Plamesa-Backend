@@ -2,12 +2,29 @@ import 'mocha'
 import request from "supertest";
 import { app } from "../../src/app.js";
 import { Ingredient } from "../../src/models/ingredient.js";
+import { GrupoAlimenticio } from "../../src/models/enum/grupoAlimenticio.js"
+import { Alergeno } from '../../src/models/enum/alergeno.js';
+import { NutrientesTipos } from '../../src/models/enum/nutrientes.js';
+import { IncompatibilidadAlimenticia } from '../../src/models/enum/incompatibilidadAlimenticia.js';
 
 beforeEach(async () => {
   await Ingredient.deleteMany();
 });
 
 describe("Modelo Ingredient", () => {
+  it("Debe recibir un error porque el ID es obligatorio", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas
+      })
+      .expect(500);
+  }); 
+
   it("Debe recibir un error porque el nombre es obligatorio", async () => {
     await request(app)
       .post("/ingredient")
@@ -16,92 +33,159 @@ describe("Modelo Ingredient", () => {
         cantidad: 50,
         unidad: "gr",
         costeEstimado: 5.2,
-        grupoAlimenticio: "Frutas y derivados"
+        grupoAlimenticio: GrupoAlimenticio.Frutas
       })
       .expect(500);
   }); 
 
-  /*it("Debe recibir un error porque el nombre científico es obligatorio", async () => {
+  it("Debe recibir un error porque el costeEstimado es obligatorio", async () => {
     await request(app)
-      .post("/fishes")
+      .post("/ingredient")
       .send({
-        name: "Test Fish",
-        description: "A fish for testing",
-        image_url: "/fish/testus-fishus",
-        minimum_size: 22,
-        habitat: "Sea",
-        recommended_bait: "Crab",
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        grupoAlimenticio: GrupoAlimenticio.Frutas
+      })
+      .expect(500);
+  }); 
+
+  it("Debe recibir un error porque el costeEstimado debe ser mayor que 0", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: -1.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas
+      })
+      .expect(500);
+  }); 
+
+  it("Debe recibir un error porque el grupoAlimenticio es obligatorio", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+      })
+      .expect(500);
+  }); 
+
+  it("Debe recibir un error porque el grupoAlimenticio no existe en el enum", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: "Aceites y frutas"
+      })
+      .expect(500);
+  }); 
+
+  it("Debe recibir un error porque el alergeno no existe en el enum", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas,
+        alergenos: [ "Fruta" ]
+      })
+      .expect(500);
+  }); 
+
+  it("Debe recibir un error porque la incompatibilidad no existe en el enum", async () => {
+    await request(app)
+      .post("/ingredient")
+      .send({
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas,
+        alergenos: Alergeno.Leche,
+        incompatibilidadesAlimenticias: [ "Celi-Vegetariano" ]
       })
       .expect(500);
   });
 
-  it("Debe recibir un error porque la descripción es obligatoria", async () => {
+  it("Debe recibir un error porque el nutriente no existe en el enum", async () => {
     await request(app)
-      .post("/fishes")
+      .post("/ingredient")
       .send({
-        name: "Test Fish",
-        cientific_name: "Testus Fishus",
-        image_url: "/fish/testus-fishus",
-        minimum_size: 22,
-        habitat: "Sea",
-        recommended_bait: "Crab",
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas,
+        alergenos: Alergeno.Leche,
+        incompatibilidadesAlimenticias: [ IncompatibilidadAlimenticia.Celiacos ],
+        nutrientes: [
+          {
+            nombre: "vitamina H",
+            cantidad: 56,
+          }
+        ]
       })
       .expect(500);
   });
 
-  it("Debe recibir un error porque la URL de la imagen es obligatoria", async () => {
+  it("Debe recibir un error porque la cantidad del nutriente es obligatoria", async () => {
     await request(app)
-      .post("/fishes")
+      .post("/ingredient")
       .send({
-        name: "Test Fish",
-        cientific_name: "Testus Fishus",
-        description: "A fish for testing",
-        minimum_size: 22,
-        habitat: "Sea",
-        recommended_bait: "Crab",
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas,
+        alergenos: Alergeno.Leche,
+        incompatibilidadesAlimenticias: [ IncompatibilidadAlimenticia.Celiacos ],
+        nutrientes: [
+          {
+            nombre: NutrientesTipos.Energia,
+          }
+        ]
       })
       .expect(500);
   });
 
-  it("Debe recibir un error porque la talla mínima es obligatoria", async () => {
+
+  it("Debe CREAR el objeto, todo correcto", async () => {
     await request(app)
-      .post("/fishes")
+      .post("/ingredient")
       .send({
-        name: "Test Fish",
-        cientific_name: "Testus Fishus",
-        description: "A fish for testing",
-        image_url: "/fish/testus-fishus",
-        habitat: "Sea",
-        recommended_bait: "Crab",
+        ID: 1,
+        nombre: "platano",
+        cantidad: 50,
+        unidad: "gr",
+        costeEstimado: 5.2,
+        grupoAlimenticio: GrupoAlimenticio.Frutas,
+        alergenos: Alergeno.Leche,
+        incompatibilidadesAlimenticias: [ IncompatibilidadAlimenticia.Celiacos ],
+        nutrientes: [
+          {
+            nombre: NutrientesTipos.Energia,
+            cantidad: 56,
+          }
+        ]
       })
-      .expect(500);
+      .expect(201);
   });
-
-  it("Debe recibir un error porque el la talla mínima tiene un formato incorrecto", async () => {
-    await request(app)
-      .post("/fishes")
-      .send({
-        name: "Test Fish",
-        cientific_name: "Testus Fishus",
-        description: "A fish for testing",
-        image_url: "/fish/testus-fishus",
-        minimum_size: 0,
-        habitat: "Sea",
-        recommended_bait: "Crab",
-      })
-      .expect(500);
-
-    await request(app)
-      .post("/fishes")
-      .send({
-        name: "Test Fish",
-        cientific_name: "Testus Fishus",
-        description: "A fish for testing",
-        image_url: "/fish/testus-fishus",
-        minimum_size: -1,
-        habitat: "Sea",
-        recommended_bait: "Crab",
-      })
-      .expect(500);
-  });*/
 });

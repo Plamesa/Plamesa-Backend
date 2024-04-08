@@ -6,14 +6,15 @@ import {
 
 export const ingredientRouter = express.Router();
 
-// Add a ingredient
+
+/** Añadir un ingrediente */
 ingredientRouter.post("/ingredient", async (req, res) => {
   try {
     const ingredient = new Ingredient({
       ...req.body,
     });
 
-    // Adds the ingredient to the database
+    // Añadir ingredientes a la BD
     await ingredient.save();
     return res.status(201).send(ingredient);
   } catch (error) {
@@ -21,7 +22,7 @@ ingredientRouter.post("/ingredient", async (req, res) => {
   }
 });
 
-// Gets all ingredients or by name
+/** Obtener todos los ingredientes o por nombre */
 ingredientRouter.get("/ingredient", async (req, res) => {
   try {
     let ingredients;
@@ -33,7 +34,7 @@ ingredientRouter.get("/ingredient", async (req, res) => {
       ingredients = await Ingredient.find();
     }
 
-    // Sends the result to the client
+    // Mandar el resultado al cliente
     if (ingredients) {
       return res.status(200).send(ingredients);
     }
@@ -43,7 +44,7 @@ ingredientRouter.get("/ingredient", async (req, res) => {
   }
 });
 
-// Gets ingredient by ID
+/** Obtener un ingrediente por ID */
 ingredientRouter.get("/ingredient/:id", async (req, res) => {
   try {
     const ingredient = await Ingredient.findOne({
@@ -60,21 +61,21 @@ ingredientRouter.get("/ingredient/:id", async (req, res) => {
   }
 });
 
-// Delete ingredient by ID
+/** Eliminar un ingrediente de la BD por nombre */
 ingredientRouter.delete("/ingredient", async (req, res) => {
   if (!req.query.nombre) {
     return res.status(400).send({
-      error: "Es necesario poner ingrediente",
+      error: "Es necesario poner el nombre del ingrediente",
     });
   }
 
   try {
-    // Deletes the ingredient
+    // Eliminar el ingrediente
     const deletedIngredient = await Ingredient.findOneAndDelete({
       nombre: req.query.nombre,
     });
 
-    // Sends the result to the client
+    // Mandar el resultado al cliente
     if (deletedIngredient) {
       return res.status(200).send(deletedIngredient);
     }
@@ -84,15 +85,15 @@ ingredientRouter.delete("/ingredient", async (req, res) => {
   }
 });
 
-// Delete ingredient by ID
+/** Eliminar un ingrediente de la BD por ID */
 ingredientRouter.delete("/ingredient/:id", async (req, res) => {
   try {
-    // Deletes the ingredient
+    // Eliminar el ingrediente
     const deletedIngredient = await Ingredient.findOneAndDelete({
       ID: req.params.id,
     });
 
-    // Sends the result to the client
+    // Mandar el resultado al cliente
     if (deletedIngredient) {
       return res.status(200).send(deletedIngredient);
     }

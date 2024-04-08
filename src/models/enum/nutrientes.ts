@@ -34,7 +34,11 @@ export interface Nutriente {
   unidad: string;
 }
 
-// Función para obtener la unidad según el nombre del nutriente
+/**
+ * Función para obtener la unidad según el nombre del nutriente
+ * @param nombre nombre del nutriente
+ * @returns una string con la unidad correspondiente a ese nutriente
+ */
 export function getUnitFromName(nombre: NutrientesTipos): string {
   switch (nombre) {
     case NutrientesTipos.Energia:

@@ -8,7 +8,7 @@ import {
   getUnitFromName,
 } from "./enum/nutrientes.js";
 
-// Definición de la interfaz de documento de ingrediente
+/** Definición de la interfaz de documento de ingrediente */ 
 export interface IngredientDocumentInterface extends Document {
   ID: number;
   nombre: string;
@@ -21,7 +21,7 @@ export interface IngredientDocumentInterface extends Document {
   nutrientes: Nutriente[];
 }
 
-// Definición del esquema de Mongoose para el ingrediente
+/** Definición del esquema de Mongoose para el ingrediente */ 
 const IngredientSchema = new Schema<IngredientDocumentInterface>({
   ID: {
     type: Number,
@@ -36,12 +36,10 @@ const IngredientSchema = new Schema<IngredientDocumentInterface>({
   },
   cantidad: {
     type: Number,
-    required: true,
     default: 100,
   },
   unidad: {
     type: String,
-    required: true,
     trim: true,
     default: "gr",
   },
@@ -78,8 +76,12 @@ const IngredientSchema = new Schema<IngredientDocumentInterface>({
           type: String,
           enum: Object.values(NutrientesTipos),
           trim: true,
+          required: true,
         },
-        cantidad: Number,
+        cantidad: {
+          type: Number,
+          required: true,
+        },
         unidad: {
           type: String,
           default: function (this: { nombre: NutrientesTipos }) {

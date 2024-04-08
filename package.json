@@ -11,7 +11,8 @@
     "dev": "tsc-watch --onSuccess \"env-cmd -f ./config/dev.env node dist/index.js\"",
     "devAtlas": "tsc-watch --onSuccess \"env-cmd -f ./config/atlas.env node dist/index.js\"",
     "test": "env-cmd -f ./config/test.env mocha --exit",
-    "coverage": "c8 npm test && c8 report --reporter=lcov"
+    "coverage": "c8 npm test && c8 report --reporter=lcov",
+    "doc": "typedoc"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +37,7 @@
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
     "tsc-watch": "^6.2.0",
+    "typedoc": "^0.25.13",
     "typescript": "^5.4.3"
   },
   "dependencies": {
