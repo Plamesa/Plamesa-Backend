@@ -56,20 +56,18 @@ recipeRouter.post("/recipe", async (req, res) => {
       );
 
       ingredientObj.nutrientes.forEach((nutriente) => {
-        // Verificar si el nutriente ya está presente en la matriz
+        // Verificar si el nutriente ya está presente
         const existingNutrienteIndex = nutrientes.findIndex(
           (n) => n.nombre === nutriente.nombre,
         );
 
         if (existingNutrienteIndex === -1) {
-          // Si el nutriente no está presente, añadirlo a la matriz
           nutrientes.push({
             nombre: nutriente.nombre,
-            cantidad: (cantidad * nutriente.cantidad) / ingredientObj.cantidad, // Considerar la cantidad del ingrediente
+            cantidad: (cantidad * nutriente.cantidad) / ingredientObj.cantidad,
             unidad: nutriente.unidad,
           });
         } else {
-          // Si el nutriente ya está presente, sumar las cantidades
           nutrientes[existingNutrienteIndex].cantidad +=
             (cantidad * nutriente.cantidad) / ingredientObj.cantidad;
         }
