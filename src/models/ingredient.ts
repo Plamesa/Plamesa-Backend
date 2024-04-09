@@ -8,7 +8,7 @@ import {
   getUnitFromName,
 } from "./enum/nutrientes.js";
 
-/** Definición de la interfaz de documento de ingrediente */ 
+/** Definición de la interfaz de documento de ingrediente */
 export interface IngredientDocumentInterface extends Document {
   ID: number;
   nombre: string;
@@ -21,7 +21,7 @@ export interface IngredientDocumentInterface extends Document {
   nutrientes: Nutriente[];
 }
 
-/** Definición del esquema de Mongoose para el ingrediente */ 
+/** Definición del esquema de Mongoose para el ingrediente */
 const IngredientSchema = new Schema<IngredientDocumentInterface>({
   ID: {
     type: Number,

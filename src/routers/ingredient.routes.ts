@@ -6,7 +6,6 @@ import {
 
 export const ingredientRouter = express.Router();
 
-
 /** Añadir un ingrediente */
 ingredientRouter.post("/ingredient", async (req, res) => {
   try {
