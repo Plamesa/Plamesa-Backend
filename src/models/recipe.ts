@@ -6,7 +6,6 @@ import { IncompatibilidadAlimenticia } from "./enum/incompatibilidadAlimenticia.
 import {
   Nutriente,
   NutrientesTipos,
-  getUnitFromName,
 } from "./enum/nutrientes.js";
 
 /** Definición de la interfaz de documento de receta */
