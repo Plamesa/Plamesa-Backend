@@ -1,49 +1,45 @@
 import { Document, Schema, model } from "mongoose";
-import { GrupoAlimenticio } from "./enum/grupoAlimenticio.js";
-import { Alergeno } from "./enum/alergeno.js";
-import { IncompatibilidadAlimenticia } from "./enum/incompatibilidadAlimenticia.js";
+import { FoodGroup } from "./enum/foodGroup.js";
+import { Allergen } from "./enum/allergen.js";
+import { UserDocumentInterface } from "./user.js";
 import {
-  Nutriente,
-  NutrientesTipos,
+  Nutrient,
+  NutrientsTypes,
   getUnitFromName,
-} from "./enum/nutrientes.js";
+  mandatoryNutrients,
+} from "./enum/nutrients.js";
+
 
 /** Definición de la interfaz de documento de ingrediente */
 export interface IngredientDocumentInterface extends Document {
-  ID: number;
-  nombre: string;
-  cantidad: number;
-  unidad: string;
-  costeEstimado: number;
-  grupoAlimenticio: GrupoAlimenticio;
-  alergenos: Alergeno[];
-  incompatibilidadesAlimenticias: IncompatibilidadAlimenticia[];
-  nutrientes: Nutriente[];
+  name : string;
+  amount: number;
+  unit: string;
+  estimatedCost: number;
+  foodGroup: FoodGroup;
+  allergens: Allergen[];
+  nutrients: Nutrient[];
+  ownerUser: UserDocumentInterface;
 }
 
 /** Definición del esquema de Mongoose para el ingrediente */
 const IngredientSchema = new Schema<IngredientDocumentInterface>({
-  ID: {
-    type: Number,
-    unique: true,
-    required: true,
-  },
-  nombre: {
+  name: {
     type: String,
     unique: true,
     required: true,
     trim: true,
   },
-  cantidad: {
+  amount: {
     type: Number,
     default: 100,
   },
-  unidad: {
+  unit: {
     type: String,
     trim: true,
     default: "gr",
   },
-  costeEstimado: {
+  estimatedCost: {
     type: Number,
     required: true,
     trim: true,
@@ -53,44 +49,48 @@ const IngredientSchema = new Schema<IngredientDocumentInterface>({
       }
     },
   },
-  grupoAlimenticio: {
+  foodGroup: {
     type: String,
     trim: true,
     required: true,
-    enum: Object.values(GrupoAlimenticio),
+    enum: Object.values(FoodGroup),
   },
-  alergenos: {
+  allergens: {
     type: [String],
-    enum: Object.values(Alergeno),
+    enum: Object.values(Allergen),
     trim: true,
   },
-  incompatibilidadesAlimenticias: {
-    type: [String],
-    enum: Object.values(IncompatibilidadAlimenticia),
-    trim: true,
-  },
-  nutrientes: {
+  nutrients: {
     type: [
       {
-        nombre: {
+        name: {
           type: String,
-          enum: Object.values(NutrientesTipos),
+          enum: Object.values(NutrientsTypes),
           trim: true,
           required: true,
         },
-        cantidad: {
+        amount: {
           type: Number,
           required: true,
         },
-        unidad: {
+        unit: {
           type: String,
-          default: function (this: { nombre: NutrientesTipos }) {
-            return getUnitFromName(this.nombre);
+          default: function (this: { name: NutrientsTypes }) {
+            return getUnitFromName(this.name);
           },
         },
       },
     ],
+    validate: {
+      validator: mandatoryNutrients, 
+      message: "Debe contener los nutrientes obligados: Energía, Proteinas, Carbohidratos, Grasas Totales, Grasas Saturadas, Sal y Azúcares"
+    },
     _id: false,
+  },
+  ownerUser: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
   },
 });
 

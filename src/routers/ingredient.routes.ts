@@ -3,35 +3,53 @@ import {
   Ingredient,
   IngredientDocumentInterface,
 } from "../models/ingredient.js";
+import { User } from "../models/user.js";
 
 export const ingredientRouter = express.Router();
 
 /** Añadir un ingrediente */
 ingredientRouter.post("/ingredient", async (req, res) => {
   try {
-    const ingredient = new Ingredient({
-      ...req.body,
+    // Buscar usuario propietario
+    const user = await User.findOne({_id: req.body.ownerUser});
+    if (!user) {
+      return res.status(404).send({
+        error: "Usuario no encontrado"
+      });
+    }
+
+    // Añadir ingrediente en la BD
+    req.body.name = req.body.name.toLowerCase();
+    req.body.ownerUser = user;
+    const ingredient = new Ingredient(req.body);
+    await ingredient.save();
+
+    // Incluimos el ingrediente en la lista de ingredientes creados del usuario
+    user.createdIngredients.push(ingredient._id);
+    await User.findOneAndUpdate(user._id, {createdIngredients: user.createdIngredients}, {
+      new: true,
+      runValidators: true
+    })
+
+    await ingredient.populate({
+      path: 'ownerUser',
+      select: ['username']
     });
 
-    // Añadir ingredientes a la BD
-    await ingredient.save();
     return res.status(201).send(ingredient);
   } catch (error) {
     return res.status(500).send(error);
   }
 });
 
-/** Obtener todos los ingredientes o por nombre */
+
+/** Obtener todos los ingredientes */
 ingredientRouter.get("/ingredient", async (req, res) => {
   try {
-    let ingredients;
-    if (req.query.nombre) {
-      ingredients = await Ingredient.findOne({
-        nombre: req.query.nombre,
-      });
-    } else {
-      ingredients = await Ingredient.find();
-    }
+    const ingredients = await Ingredient.find().populate({
+      path: 'ownerUser',
+      select: ['username']
+    });
 
     // Mandar el resultado al cliente
     if (ingredients) {
@@ -43,11 +61,14 @@ ingredientRouter.get("/ingredient", async (req, res) => {
   }
 });
 
-/** Obtener un ingrediente por ID */
-ingredientRouter.get("/ingredient/:id", async (req, res) => {
+/** Obtener un ingrediente por name */
+ingredientRouter.get("/ingredient/:name", async (req, res) => {
   try {
     const ingredient = await Ingredient.findOne({
-      ID: req.params.id,
+      name: req.params.name,
+    }).populate({
+      path: 'ownerUser',
+      select: ['username']
     });
 
     if (ingredient) {
