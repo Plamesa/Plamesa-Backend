@@ -1,45 +1,37 @@
 import { Document, Schema, model } from "mongoose";
-import { TipoComida } from "./enum/tipoComida.js";
+import { FoodType } from "./enum/FoodType.js";
 import { IngredientDocumentInterface } from "./ingredient.js";
-import { Alergeno } from "./enum/alergeno.js";
-import { IncompatibilidadAlimenticia } from "./enum/incompatibilidadAlimenticia.js";
+import { Allergen } from "./enum/allergen.js";
 import {
-  Nutriente,
-  NutrientesTipos,
-} from "./enum/nutrientes.js";
+  Nutrient,
+  NutrientsTypes,
+} from "./enum/nutrients.js";
+import { UserDocumentInterface } from "./user.js";
 
 /** Definición de la interfaz de documento de receta */
 export interface RecipeDocumentInterface extends Document {
-  ID: number;
-  nombre: string;
-  servicios: number;
-  tiempoPreparacion: number;
-  tipoComida: TipoComida;
-  instrucciones: string[];
-  comentarios: string;
-  utensiliosCocina: string[];
-  ingredientes: IngredientDocumentInterface[];
-  //cantidad: number;
-  costeEstimado: number;
-  alergenos: Alergeno[];
-  incompatibilidadesAlimenticias: IncompatibilidadAlimenticia[];
-  nutrientes: Nutriente[];
+  name: string;
+  numberService: number;
+  preparationTime: number;
+  foodType: FoodType;
+  instructions: string[];
+  comments: string;
+  cookware: string[];
+  ingredients: IngredientDocumentInterface[];
+  estimatedCost: number;
+  allergens: Allergen[];
+  nutrients: Nutrient[];
+  ownerUser: UserDocumentInterface;
 }
 
 /** Definición del esquema de Mongoose para la receta */
 const RecipeSchema = new Schema<RecipeDocumentInterface>({
-  ID: {
-    type: Number,
-    unique: true,
-    required: true,
-  },
-  nombre: {
+  name: {
     type: String,
-    unique: true,
     required: true,
     trim: true,
   },
-  servicios: {
+  numberService: {
     type: Number,
     required: true,
     validate: (value: number) => {
@@ -48,7 +40,7 @@ const RecipeSchema = new Schema<RecipeDocumentInterface>({
       }
     },
   },
-  tiempoPreparacion: {
+  preparationTime: {
     type: Number,
     required: true,
     validate: (value: number) => {
@@ -57,78 +49,71 @@ const RecipeSchema = new Schema<RecipeDocumentInterface>({
       }
     },
   },
-  tipoComida: {
+  foodType: {
     type: String,
     trim: true,
     required: true,
-    enum: Object.values(TipoComida),
+    enum: Object.values(FoodType),
   },
-  instrucciones: {
+  instructions: {
     type: [String],
     required: true,
     trim: true,
   },
-  comentarios: {
+  comments: {
     type: String,
     trim: true,
   },
-  utensiliosCocina: {
+  cookware: {
     type: [String],
     trim: true,
   },
-  ingredientes: {
+  ingredients: {
     type: [
       {
-        IdIngrediente: {
+        ingredientID: {
           type: Schema.Types.ObjectId,
           required: true,
           ref: "Ingredient",
         },
-        cantidad: {
+        amount: {
           type: Number,
           required: true,
-        },
-        unidad: {
-          type: String,
-          trim: true,
         },
       },
     ],
     required: true,
     _id: false,
   },
-  costeEstimado: {
+  estimatedCost: {
     type: Number,
   },
-  alergenos: {
+  allergens: {
     type: [String],
-    enum: Object.values(Alergeno),
+    enum: Object.values(Allergen),
     trim: true,
   },
-  incompatibilidadesAlimenticias: {
-    type: [String],
-    enum: Object.values(IncompatibilidadAlimenticia),
-    trim: true,
-  },
-  nutrientes: {
+  nutrients: {
     type: [
       {
-        nombre: {
+        name: {
           type: String,
-          enum: Object.values(NutrientesTipos),
+          enum: Object.values(NutrientsTypes),
           trim: true,
           required: true,
         },
-        cantidad: {
+        amount: {
           type: Number,
           required: true,
-        },
-        unidad: {
-          type: String,
-        },
+        }
       },
     ],
     _id: false,
+  },
+  ownerUser: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
   },
 });
 

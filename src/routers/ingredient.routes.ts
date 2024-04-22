@@ -1,9 +1,13 @@
 import * as express from "express";
+import jwt from 'jsonwebtoken';
 import {
   Ingredient,
   IngredientDocumentInterface,
 } from "../models/ingredient.js";
 import { User } from "../models/user.js";
+import { Recipe } from "../models/recipe.js";
+import { Role } from "../models/enum/role.js";
+import { verifyJWT } from "../utils/verifyJWT.js";
 
 export const ingredientRouter = express.Router();
 
@@ -19,7 +23,6 @@ ingredientRouter.post("/ingredient", async (req, res) => {
     }
 
     // Añadir ingrediente en la BD
-    req.body.name = req.body.name.toLowerCase();
     req.body.ownerUser = user;
     const ingredient = new Ingredient(req.body);
     await ingredient.save();
@@ -43,6 +46,8 @@ ingredientRouter.post("/ingredient", async (req, res) => {
 });
 
 
+
+
 /** Obtener todos los ingredientes */
 ingredientRouter.get("/ingredient", async (req, res) => {
   try {
@@ -60,6 +65,7 @@ ingredientRouter.get("/ingredient", async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
 
 /** Obtener un ingrediente por name */
 ingredientRouter.get("/ingredient/:name", async (req, res) => {
@@ -81,39 +87,57 @@ ingredientRouter.get("/ingredient/:name", async (req, res) => {
   }
 });
 
+
+
+
 /** Eliminar un ingrediente de la BD por nombre */
 ingredientRouter.delete("/ingredient", async (req, res) => {
-  if (!req.query.nombre) {
+  if (!req.query.name) {
     return res.status(400).send({
       error: "Es necesario poner el nombre del ingrediente",
     });
   }
 
   try {
-    // Eliminar el ingrediente
-    const deletedIngredient = await Ingredient.findOneAndDelete({
-      nombre: req.query.nombre,
-    });
-
-    // Mandar el resultado al cliente
-    if (deletedIngredient) {
-      return res.status(200).send(deletedIngredient);
+    // Existe token de autorizacion
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+      return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
     }
-    return res.status(404).send();
-  } catch (error) {
-    return res.status(500).send(error);
-  }
-});
 
-/** Eliminar un ingrediente de la BD por ID */
-ingredientRouter.delete("/ingredient/:id", async (req, res) => {
-  try {
-    // Eliminar el ingrediente
-    const deletedIngredient = await Ingredient.findOneAndDelete({
-      ID: req.params.id,
+    // Buscar el ingrediente
+    const ingredient = await Ingredient.findOne({name: req.query.name})
+    if (!ingredient) {
+      return res.status(404).send("Ingrediente no encontrado");
+    }
+    
+    // Verificar si el usuario que intenta eliminar es administrador o el propietario
+    const user = await verifyJWT(token);
+    if (!user) {
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
+    }
+    if (user.role != Role.Admin && user._id.toString() !== ingredient.ownerUser.toString()) {
+      console.log(user._id, ingredient.ownerUser)
+      return res.status(401).send("No autorizado para eliminar este ingrediente"); // Usuario no autorizado
+    }
+
+    // Verificar si alguna receta usa el ingrediente
+    const recipesUsingIngredient = await Recipe.find({
+      'ingredients.ingredientID': ingredient._id,
     });
 
-    // Mandar el resultado al cliente
+    if (recipesUsingIngredient.length > 0) {
+      return res.status(400).send({
+        error: `No se puede eliminar el ingrediente porque está en uso por ${recipesUsingIngredient.length} receta(s)`,
+      });
+    }
+
+    // Eliminar el ingrediente
+    const deletedIngredient = await Ingredient.findOneAndDelete({
+      name: req.query.name,
+    });
+
     if (deletedIngredient) {
       return res.status(200).send(deletedIngredient);
     }

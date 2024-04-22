@@ -9,7 +9,7 @@ loginRouter.post('/login', async (req, res) => {
 
     // Aquí deberías validar el nombre de usuario y la contraseña contra tu base de datos
 
-    if (username === 'ivalas' && password === 'contraseña') {
+    if (username === 'admin' && password === 'contraseña') {
       // Si las credenciales son válidas, genera un token JWT
       const token = jwt.sign({ username }, 'secreto', { expiresIn: '1h' });
       return res.json({ token });

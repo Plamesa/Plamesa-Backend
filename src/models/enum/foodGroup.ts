@@ -1,5 +1,5 @@
-// Definición del enum GrupoAlimenticio
-export enum GrupoAlimenticio {
+// Definición del enum FoodGroup
+export enum FoodGroup {
   Lacteos = "Lácteos y derivados",
   Huevos = "Huevos y derivados",
   Carnicos = "Cárnicos y derivados",

@@ -29,6 +29,11 @@ const IngredientSchema = new Schema<IngredientDocumentInterface>({
     unique: true,
     required: true,
     trim: true,
+    validate: (value: string) => {
+      if (value != value.toLowerCase()) {
+        throw new Error("El nombre debe ser introducido en minusculas");
+      }
+    },
   },
   amount: {
     type: Number,

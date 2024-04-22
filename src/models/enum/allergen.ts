@@ -1,5 +1,5 @@
-// Definición del enum Alergeno
-export enum Alergeno {
+// Definición del enum Allergen
+export enum Allergen {
   Cereales = "Cereales con gluten",
   Crustaceos = "Crustáceos y productos a base de crustáceos",
   Huevos = "Huevos y productos derivados",

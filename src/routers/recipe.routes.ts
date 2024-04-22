@@ -1,28 +1,27 @@
 import * as express from "express";
 import { Recipe, RecipeDocumentInterface } from "../models/recipe.js";
 import { Ingredient } from "../models/ingredient.js";
-import { Alergeno } from "../models/enum/alergeno.js";
+import { Allergen } from "../models/enum/allergen.js";
 import { IncompatibilidadAlimenticia } from "../models/enum/incompatibilidadAlimenticia.js";
+import { User } from "../models/user.js";
 
 export const recipeRouter = express.Router();
 
 /** Añadir una receta */
 recipeRouter.post("/recipe", async (req, res) => {
   try {
-    const ingredientesRequeridos: {
-      IdIngrediente: string;
-      cantidad: number;
-      unidad: string;
-    }[] = req.body.ingredientes;
-    let costeEstimado: number = 0;
-    let alergenos: Alergeno[] = [];
-    let incompatibilidadesAlimenticias: IncompatibilidadAlimenticia[] = [];
-    const nutrientes: { nombre: string; cantidad: number; unidad: string }[] =
-      [];
+    const requiredIngredients: {
+      ingredientID: string;
+      amount: number;
+    }[] = req.body.ingredients;
+    let estimatedCost: number = 0;
+    let allergens: Allergen[] = [];
+    const nutrients: { name: string; amount: number;}[] = [];
 
-    for (let i = 0; i < ingredientesRequeridos.length; i++) {
-      const { IdIngrediente, cantidad } = ingredientesRequeridos[i];
-      const ingredientObj = await Ingredient.findById(IdIngrediente);
+    // Buscamos los ingredientes, los incluimos y calculamos sus parametros para la receta
+    for (let i = 0; i < requiredIngredients.length; i++) {
+      const { ingredientID, amount } = requiredIngredients[i];
+      const ingredientObj = await Ingredient.findById(ingredientID);
 
       if (!ingredientObj) {
         return res.status(404).send({
@@ -31,57 +30,58 @@ recipeRouter.post("/recipe", async (req, res) => {
       }
 
       // Calcular el costeEstimado a partir del coste de cada ingrediente
-      costeEstimado +=
-        (ingredientObj.costeEstimado * cantidad) / ingredientObj.cantidad;
-      req.body.ingredientes[i].unidad = ingredientObj.unidad;
+      estimatedCost += (ingredientObj.estimatedCost * amount) / ingredientObj.amount;
 
       // Añadir los alergenos a partir de los alergenos de los ingredientes
-      ingredientObj.alergenos.forEach((alergeno) => {
-        if (!alergenos.includes(alergeno)) {
-          alergenos.push(alergeno);
+      ingredientObj.allergens.forEach((allergen) => {
+        if (!allergens.includes(allergen)) {
+          allergens.push(allergen);
         }
       });
 
-      // Añadir las incompatibilidadesAlimenticias a partir de las incompatibilidadesAlimenticias de los ingredientes
-      ingredientObj.incompatibilidadesAlimenticias.forEach(
-        (incompatibilidadAlimenticia) => {
-          if (
-            !incompatibilidadesAlimenticias.includes(
-              incompatibilidadAlimenticia,
-            )
-          ) {
-            incompatibilidadesAlimenticias.push(incompatibilidadAlimenticia);
-          }
-        },
-      );
-
-      ingredientObj.nutrientes.forEach((nutriente) => {
+      // Añadir los nutrientes a partir de los ingredientes
+      ingredientObj.nutrients.forEach((nutrient) => {
         // Verificar si el nutriente ya está presente
-        const existingNutrienteIndex = nutrientes.findIndex(
-          (n) => n.nombre === nutriente.nombre,
+        const existingNutrienteIndex = nutrients.findIndex(
+          (n) => n.name === nutrient.name,
         );
 
         if (existingNutrienteIndex === -1) {
-          nutrientes.push({
-            nombre: nutriente.nombre,
-            cantidad: (cantidad * nutriente.cantidad) / ingredientObj.cantidad,
-            unidad: nutriente.unidad,
+          nutrients.push({
+            name: nutrient.name,
+            amount: (amount * nutrient.amount) / ingredientObj.amount,
           });
         } else {
-          nutrientes[existingNutrienteIndex].cantidad +=
-            (cantidad * nutriente.cantidad) / ingredientObj.cantidad;
+          nutrients[existingNutrienteIndex].amount +=
+            (amount * nutrient.amount) / ingredientObj.amount;
         }
       });
     }
 
-    req.body.costeEstimado = costeEstimado;
-    req.body.alergenos = alergenos;
-    req.body.incompatibilidadesAlimenticias = incompatibilidadesAlimenticias;
-    req.body.nutrientes = nutrientes;
+    // Buscar usuario propietario
+    const user = await User.findOne({_id: req.body.ownerUser});
+    if (!user) {
+      return res.status(404).send({
+        error: "Usuario no encontrado"
+      });
+    }
+
+    req.body.ownerUser = user;
+    req.body.estimatedCost = estimatedCost;
+    req.body.allergens = allergens;
+    req.body.nutrients = nutrients;
     const recipe = new Recipe(req.body);
 
     // Añadir Receta a la BD
     await recipe.save();
+
+    // Incluimos la receta en la lista de recetas creadas del usuario
+    user.createdRecipes.push(recipe._id);
+    await User.findOneAndUpdate(user._id, {createdRecipes: user.createdRecipes}, {
+      new: true,
+      runValidators: true
+    })
+
     return res.status(201).send(recipe);
   } catch (error) {
     return res.status(500).send(error);
@@ -96,22 +96,29 @@ recipeRouter.get("/recipe", async (req, res) => {
       recipes = await Recipe.findOne({
         nombre: req.query.nombre,
       }).populate({
-        path: "ingredientes",
+        path: "ingredients",
         populate: {
-          path: "IdIngrediente",
+          path: "ingredientID",
           model: "Ingredient",
-          select: "ID nombre",
+          select: "name",
         },
       });
     } else {
-      recipes = await Recipe.find().populate({
-        path: "ingredientes",
-        populate: {
-          path: "IdIngrediente",
-          model: "Ingredient",
-          select: "ID nombre",
-        },
-      });
+      recipes = await Recipe.find().populate([
+        {
+          path: "ingredients",
+          populate: {
+            path: "ingredientID",
+            model: "Ingredient",
+            select: "name",
+          },
+        }, 
+        {
+          path: "ownerUser",
+          model: "User",
+          select: "username"
+        }
+      ]);
     }
 
     // Mandar el resultado al cliente
