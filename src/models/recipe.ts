@@ -7,6 +7,7 @@ import {
   NutrientsTypes,
 } from "./enum/nutrients.js";
 import { UserDocumentInterface } from "./user.js";
+import { IngredientRecipe } from "./enum/ingredientRecipe.js";
 
 /** Definición de la interfaz de documento de receta */
 export interface RecipeDocumentInterface extends Document {
@@ -17,7 +18,7 @@ export interface RecipeDocumentInterface extends Document {
   instructions: string[];
   comments: string;
   cookware: string[];
-  ingredients: IngredientDocumentInterface[];
+  ingredients: IngredientRecipe[];
   estimatedCost: number;
   allergens: Allergen[];
   nutrients: Nutrient[];
