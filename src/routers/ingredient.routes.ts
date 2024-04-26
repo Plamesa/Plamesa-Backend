@@ -1,5 +1,4 @@
 import * as express from "express";
-import jwt from 'jsonwebtoken';
 import {
   Ingredient,
   IngredientDocumentInterface,
@@ -16,12 +15,17 @@ export const ingredientRouter = express.Router();
 /** Añadir un ingrediente */
 ingredientRouter.post("/ingredient", async (req, res) => {
   try {
-    // Buscar usuario propietario
-    const user = await User.findOne({_id: req.body.ownerUser});
+    // Existe token de autorizacion
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+      return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
+    }
+
+    // Verificar token y buscar usuario
+    const user = await verifyJWT(token);
     if (!user) {
-      return res.status(404).send({
-        error: "Usuario no encontrado"
-      });
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
     }
 
     // Añadir ingrediente en la BD
@@ -70,10 +74,10 @@ ingredientRouter.get("/ingredient", async (req, res) => {
 
 
 /** Obtener un ingrediente por name */
-ingredientRouter.get("/ingredient/:name", async (req, res) => {
+ingredientRouter.get("/ingredient/:id", async (req, res) => {
   try {
     const ingredient = await Ingredient.findOne({
-      name: req.params.name,
+      _id: req.params.id,
     }).populate({
       path: 'ownerUser',
       select: ['username']
@@ -92,22 +96,30 @@ ingredientRouter.get("/ingredient/:name", async (req, res) => {
 
 
 
-/** Actualizar un ingrediente a través de su nombre */
-ingredientRouter.patch('/ingredient', async (req, res) => {
-  if (!req.query.name) {
-    return res.status(400).send({
-      error: "Es necesario poner el nombre del ingrediente",
-    });
-  }
-    
+/** Actualizar un ingrediente a través de su id */
+ingredientRouter.patch('/ingredient/:id', async (req, res) => {   
   try {
-    const ingredient = await Ingredient.findOne({
-      name: req.query.name
-    });
+    // Existe token de autorizacion
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+      return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
+    }
+
+    const ingredient = await Ingredient.findOne({_id: req.params.id});
     if (!ingredient) {
       return res.status(404).send({
         error: "Ingrediente no encontrado"
       });
+    }
+
+    // Verificar si el usuario que intenta eliminar es administrador o el propietario
+    const user = await verifyJWT(token);
+    if (!user) {
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
+    }
+    if (user.role != Role.Admin && user._id.toString() !== ingredient.ownerUser.toString()) {
+      return res.status(401).send("No autorizado para eliminar este ingrediente"); // Usuario no autorizado
     }
 
     const allowedUpdates = ['name', 'amount', 'unit', 'estimatedCost', 'foodGroup', 'allergens', 'nutrients'];
@@ -287,14 +299,8 @@ ingredientRouter.patch('/ingredient', async (req, res) => {
 
 
 
-/** Eliminar un ingrediente de la BD por nombre */
-ingredientRouter.delete("/ingredient", async (req, res) => {
-  if (!req.query.name) {
-    return res.status(400).send({
-      error: "Es necesario poner el nombre del ingrediente",
-    });
-  }
-
+/** Eliminar un ingrediente de la BD por id */
+ingredientRouter.delete("/ingredient/:id", async (req, res) => {
   try {
     // Existe token de autorizacion
     const authHeader = req.headers['authorization'];
@@ -304,7 +310,7 @@ ingredientRouter.delete("/ingredient", async (req, res) => {
     }
 
     // Buscar el ingrediente
-    const ingredient = await Ingredient.findOne({name: req.query.name})
+    const ingredient = await Ingredient.findOne({_id: req.params.id})
     if (!ingredient) {
       return res.status(404).send("Ingrediente no encontrado");
     }
