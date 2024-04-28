@@ -2,7 +2,6 @@ import * as express from "express";
 import { Recipe, RecipeDocumentInterface } from "../models/recipe.js";
 import { Ingredient } from "../models/ingredient.js";
 import { Allergen } from "../models/enum/allergen.js";
-import { IncompatibilidadAlimenticia } from "../models/enum/incompatibilidadAlimenticia.js";
 import { User } from "../models/user.js";
 
 export const recipeRouter = express.Router();

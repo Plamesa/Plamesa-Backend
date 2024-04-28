@@ -2,6 +2,10 @@ import { Document, Schema, model } from "mongoose";
 import { IngredientDocumentInterface } from "./ingredient.js";
 import { RecipeDocumentInterface } from "./recipe.js";
 import { Role } from "./enum/role.js";
+import { MenuDocumentInterface } from "./menu.js";
+import { Allergen } from "./enum/allergen.js";
+import { Diet } from "./enum/diet.js";
+import { ActivityLevel, Gender } from "./enum/userData.js";
 
 /** Definición de la interfaz de documento de usuario */
 export interface UserDocumentInterface extends Document {
@@ -10,8 +14,18 @@ export interface UserDocumentInterface extends Document {
   password: string;
   email: string;
   role: Role;
+  allergies: Allergen[];
+  diet: Diet;
+  excludedIngredients: IngredientDocumentInterface[];
+  gender: Gender;
+  weight: number;
+  height: number;
+  age: number;
+  activityLevel: ActivityLevel;
   createdIngredients: IngredientDocumentInterface[];
   createdRecipes: RecipeDocumentInterface[];
+  favoriteRecipes: RecipeDocumentInterface[];
+  savedMenus: MenuDocumentInterface[]
 }
 
 /** Definición del esquema de Mongoose para el usuario */
@@ -56,6 +70,54 @@ const UserSchema = new Schema<UserDocumentInterface>({
     required: true,
     enum: Object.values(Role),
   },
+  allergies: {
+    type: [String],
+    enum: Object.values(Allergen),
+    trim: true,
+  },
+  diet: {
+    type: String,
+    enum: Object.values(Diet),
+    trim: true,
+  },
+  excludedIngredients: {
+    type: [Schema.Types.ObjectId],
+    ref: "Ingredient",
+  },
+  gender: {
+    type: String,
+    enum: Object.values(Gender),
+    trim: true,
+  },
+  weight: {
+    type: Number,
+    validate: (value: number) => {
+      if (value < 0) {
+        throw new Error("El peso no puede ser negativo");
+      }
+    },
+  },
+  height: {
+    type: Number,
+    validate: (value: number) => {
+      if (value < 0) {
+        throw new Error("La altura no puede ser negativa");
+      }
+    },
+  },
+  age: {
+    type: Number,
+    validate: (value: number) => {
+      if (value < 0) {
+        throw new Error("La edad no puede ser negativa");
+      }
+    },
+  },
+  activityLevel: {
+    type: String,
+    enum: Object.values(ActivityLevel),
+    trim: true,
+  },
   createdIngredients: {
     type: [Schema.Types.ObjectId],
     ref: "Ingredient",
@@ -63,6 +125,14 @@ const UserSchema = new Schema<UserDocumentInterface>({
   createdRecipes: {
     type: [Schema.Types.ObjectId],
     ref: "Recipes",
+  },
+  favoriteRecipes: {
+    type: [Schema.Types.ObjectId],
+    ref: "Recipes",
+  },
+  savedMenus: {
+    type: [Schema.Types.ObjectId],
+    ref: "Menu",
   },
 });
 

@@ -1,6 +1,5 @@
 import { Document, Schema, model } from "mongoose";
 import { FoodType } from "./enum/FoodType.js";
-import { IngredientDocumentInterface } from "./ingredient.js";
 import { Allergen } from "./enum/allergen.js";
 import {
   Nutrient,

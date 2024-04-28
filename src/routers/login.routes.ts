@@ -8,7 +8,7 @@ loginRouter.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Aquí deberías validar el nombre de usuario y la contraseña contra tu base de datos
+    // Validar usuario y contraseña contra BD
     const user = await User.findOne({username: username});
     if (!user) {
       return res.status(404).send({
@@ -17,7 +17,6 @@ loginRouter.post('/login', async (req, res) => {
     }
 
     if (username === user.username && password === user.password) {
-      // Si las credenciales son válidas, genera un token JWT
       const token = jwt.sign({ username }, 'secreto', { expiresIn: '1h' });
       return res.json({ token });
     } else {
