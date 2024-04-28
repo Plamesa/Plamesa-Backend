@@ -159,6 +159,122 @@ recipeRouter.get("/recipe/:id", async (req, res) => {
 
 
 
+/** Actualizar una receta a través de su id */
+recipeRouter.patch('/recipe/:id', async (req, res) => {   
+  try {
+    // Existe token de autorizacion
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+      return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
+    }
+
+    // Buscar la receta
+    const recipe = await Recipe.findOne({_id: req.params.id});
+    if (!recipe) {
+      return res.status(404).send({
+        error: "Receta no encontrada"
+      });
+    }
+
+    // Verificar si el usuario que intenta actualizar es administrador o el propietario
+    const user = await verifyJWT(token);
+    if (!user) {
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
+    }
+    if (user.role != Role.Admin && user._id.toString() !== recipe.ownerUser.toString()) {
+      return res.status(401).send("No autorizado para actualizar esta receta"); // Usuario no autorizado
+    }
+
+    // Verificar opciones de actualizado permitidas
+    const allowedUpdates = ['name', 'numberService', 'preparationTime', 'foodType', 'instructions', 'comments', 'cookware', 'ingredients'];
+    const actualUpdates = Object.keys(req.body);
+    const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
+    
+    if (!isValidUpdate) {
+      return res.status(400).send({
+        error: 'Opciones no permitidas',
+      });
+    }
+
+    // En caso de que se modifique los ingredientes se recalculan los datos de la receta
+    if (req.body.ingredients) { 
+      const requiredIngredients: {
+        ingredientID: string;
+        amount: number;
+      }[] = req.body.ingredients;
+      let estimatedCost: number = 0;
+      let allergens: Allergen[] = [];
+      const nutrients: { name: string; amount: number;}[] = [];
+  
+      // Buscamos los ingredientes, los incluimos y calculamos sus parametros para la receta
+      for (let i = 0; i < requiredIngredients.length; i++) {
+        const { ingredientID, amount } = requiredIngredients[i];
+        const ingredientObj = await Ingredient.findById(ingredientID);
+  
+        if (!ingredientObj) {
+          return res.status(404).send({
+            error: "Ingrediente no encontrado",
+          });
+        }
+  
+        // Calcular el costeEstimado a partir del coste de cada ingrediente
+        estimatedCost += (ingredientObj.estimatedCost * amount) / ingredientObj.amount;
+  
+        // Añadir los alergenos a partir de los alergenos de los ingredientes
+        ingredientObj.allergens.forEach((allergen) => {
+          if (!allergens.includes(allergen)) {
+            allergens.push(allergen);
+          }
+        });
+  
+        // Añadir los nutrientes a partir de los ingredientes
+        ingredientObj.nutrients.forEach((nutrient) => {
+          // Verificar si el nutriente ya está presente
+          const existingNutrienteIndex = nutrients.findIndex(
+            (n) => n.name === nutrient.name,
+          );
+  
+          if (existingNutrienteIndex === -1) {
+            nutrients.push({
+              name: nutrient.name,
+              amount: (amount * nutrient.amount) / ingredientObj.amount,
+            });
+          } else {
+            nutrients[existingNutrienteIndex].amount +=
+              (amount * nutrient.amount) / ingredientObj.amount;
+          }
+        });
+      }
+  
+      req.body.estimatedCost = estimatedCost;
+      req.body.allergens = allergens;
+      req.body.nutrients = nutrients;
+    }
+
+    // Actualizar la receta
+    const updateRecipe = await Recipe.findOneAndUpdate (recipe._id, req.body, {
+      new: true,
+      runValidators: true
+    })
+
+    if (updateRecipe) {
+      await updateRecipe.populate({
+        path: 'ownerUser',
+        select: ['username']
+      });
+      
+      return res.status(201).send(updateRecipe);
+    }
+    return res.status(404).send();
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+});
+
+
+
+
 /** Eliminar una receta de la BD por id */
 recipeRouter.delete("/recipe/:id", async (req, res) => {
   try {

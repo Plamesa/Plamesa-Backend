@@ -106,6 +106,7 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
     }
 
+    // Buscar el ingrediente
     const ingredient = await Ingredient.findOne({_id: req.params.id});
     if (!ingredient) {
       return res.status(404).send({
@@ -113,15 +114,16 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       });
     }
 
-    // Verificar si el usuario que intenta eliminar es administrador o el propietario
+    // Verificar si el usuario que intenta actualizar es administrador o el propietario
     const user = await verifyJWT(token);
     if (!user) {
       return res.status(401).send("No autorizado"); // Usuario no autorizado
     }
     if (user.role != Role.Admin && user._id.toString() !== ingredient.ownerUser.toString()) {
-      return res.status(401).send("No autorizado para eliminar este ingrediente"); // Usuario no autorizado
+      return res.status(401).send("No autorizado para actualizar este ingrediente"); // Usuario no autorizado
     }
 
+    // Validar opciones permitidas de actualización
     const allowedUpdates = ['name', 'amount', 'unit', 'estimatedCost', 'foodGroup', 'allergens', 'nutrients'];
     const actualUpdates = Object.keys(req.body);
     const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
@@ -278,7 +280,8 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       }
     }
 
-
+    
+    // Actualizar los valores del ingrediente
     const updateIngredient = await Ingredient.findOneAndUpdate (ingredient._id, req.body, {
       new: true,
       runValidators: true
