@@ -140,13 +140,15 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       }
 
       const mergedData = { ...ingredient.toObject(), ...req.body };
-      const missingNutrients = ingredient.nutrients.filter(
-        (originalNutrient) => 
-          !req.body.nutrients.some((newNutrient: Nutrient) => 
-            newNutrient.name === originalNutrient.name
-          )
-      );
-      mergedData.nutrients.push(...missingNutrients);
+      if (req.body.nutrients) {
+        const missingNutrients = ingredient.nutrients.filter(
+          (originalNutrient) => 
+            !req.body.nutrients.some((newNutrient: Nutrient) => 
+              newNutrient.name === originalNutrient.name
+            )
+        );
+        mergedData.nutrients.push(...missingNutrients);
+      }
       const ingredientTest = new Ingredient(mergedData); // Intenta crear una instancia con los datos entrantes
 
       await ingredientTest.validate(); 
@@ -346,7 +348,7 @@ ingredientRouter.delete("/ingredient/:id", async (req, res) => {
 
     // Eliminar el ingrediente
     const deletedIngredient = await Ingredient.findOneAndDelete({
-      name: req.query.name,
+      _id: req.params.id,
     });
 
     if (deletedIngredient) {
