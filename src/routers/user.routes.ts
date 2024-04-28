@@ -31,7 +31,28 @@ userRouter.get("/user", async (req, res) => {
         username: req.query.username,
       });
     } else {
-      users = await User.find();
+      users = await User.find().populate([
+        {
+          path: "excludedIngredients",
+          model: "Ingredient",
+          select: "_id, name"
+        },
+        {
+          path: "createdIngredients",
+          model: "Ingredient",
+          select: "_id, name"
+        },
+        {
+          path: "createdRecipes",
+          model: "Recipe",
+          select: "_id, name"
+        },
+        {
+          path: "favoriteRecipes",
+          model: "Recipe",
+          select: "_id, name"
+        }
+      ])
     }
 
     // Mandar el resultado al cliente

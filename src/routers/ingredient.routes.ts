@@ -29,7 +29,7 @@ ingredientRouter.post("/ingredient", async (req, res) => {
     }
 
     // Añadir ingrediente en la BD
-    req.body.ownerUser = user;
+    req.body.ownerUser = user._id;
     const ingredient = new Ingredient(req.body);
     await ingredient.save();
 
@@ -73,7 +73,7 @@ ingredientRouter.get("/ingredient", async (req, res) => {
 });
 
 
-/** Obtener un ingrediente por name */
+/** Obtener un ingrediente por id */
 ingredientRouter.get("/ingredient/:id", async (req, res) => {
   try {
     const ingredient = await Ingredient.findOne({
