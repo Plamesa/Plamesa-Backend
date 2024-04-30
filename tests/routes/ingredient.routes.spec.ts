@@ -193,6 +193,30 @@ describe('Rutas de Ingredientes', () => {
           {
             name: NutrientsTypes.Energia,
             amount: 12
+          },
+          {
+            name: NutrientsTypes.Proteinas,
+            amount: 50,
+          },
+          {
+            name: NutrientsTypes.Carbohidratos,
+            amount: 100,
+          },
+          {
+            name: NutrientsTypes.GrasaTotal,
+            amount: 150,
+          },
+          {
+            name: NutrientsTypes.GrasaSaturada,
+            amount: 250,
+          },
+          {
+            name: NutrientsTypes.Sal,
+            amount: 58,
+          },
+          {
+            name: NutrientsTypes.Azucar,
+            amount: 159,
           }
         ]
       })
