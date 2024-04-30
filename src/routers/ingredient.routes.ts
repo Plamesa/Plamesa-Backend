@@ -142,15 +142,6 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       }
 
       const mergedData = { ...ingredient.toObject(), ...req.body };
-      if (req.body.nutrients) {
-        const missingNutrients = ingredient.nutrients.filter(
-          (originalNutrient) => 
-            !req.body.nutrients.some((newNutrient: Nutrient) => 
-              newNutrient.name === originalNutrient.name
-            )
-        );
-        mergedData.nutrients.push(...missingNutrients);
-      }
       const ingredientTest = new Ingredient(mergedData); // Intenta crear una instancia con los datos entrantes
 
       await ingredientTest.validate(); 
