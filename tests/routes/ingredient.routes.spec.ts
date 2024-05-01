@@ -1,11 +1,13 @@
 import 'mocha';
 import request from 'supertest';
+import bcrypt from "bcryptjs";
 import { expect } from 'chai';
 import { app } from '../../src/app.js';
 import { Ingredient, IngredientDocumentInterface } from '../../src/models/ingredient.js';
 import { User } from '../../src/models/user.js';
 import { FoodGroup } from '../../src/models/enum/foodGroup.js';
 import { Nutrient, NutrientsTypes } from '../../src/models/enum/nutrients.js';
+import { ActivityLevel, Gender } from '../../src/models/enum/userData.js';
 
 let token: string;
 let createdIngredientId: string; // Almacena el ID del ingrediente creado
@@ -57,7 +59,14 @@ beforeEach(async () => {
     password: 'Test1234',
     email: 'testRoutes.user@example.com',
     role: 'Usuario regular',
+    gender: Gender.Masculino,
+    weight: 15,
+    height: 15,
+    age: 15,
+    activityLevel: ActivityLevel.Activo
   });
+  const saltRounds = 10;
+  user.password = await bcrypt.hash(user.password, saltRounds);
 
   await user.save();
 

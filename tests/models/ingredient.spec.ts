@@ -1,10 +1,12 @@
 import 'mocha';
 import request from 'supertest';
+import bcrypt from "bcryptjs";
 import { app } from '../../src/app.js';
 import { Ingredient } from '../../src/models/ingredient.js';
 import { User } from '../../src/models/user.js';
 import { FoodGroup } from '../../src/models/enum/foodGroup.js';
 import { NutrientsTypes } from '../../src/models/enum/nutrients.js';
+import { ActivityLevel, Gender } from '../../src/models/enum/userData.js';
 
 let tokenModel: string;
 
@@ -18,7 +20,14 @@ beforeEach(async () => {
     password: 'Test1234',
     email: 'testModel.user@example.com',
     role: 'Usuario regular',
+    gender: Gender.Masculino,
+    weight: 15,
+    height: 15,
+    age: 15,
+    activityLevel: ActivityLevel.Activo
   });
+  const saltRounds = 10;
+  user.password = await bcrypt.hash(user.password, saltRounds);
 
   await user.save();
 
