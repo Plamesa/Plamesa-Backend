@@ -45,13 +45,13 @@ const UserSchema = new Schema<UserDocumentInterface>({
     type: String,
     required: true,
     trim: true,
-    validate: (value: string) => {
+    /*validate: (value: string) => {
       if (!value.match(/^(?=.*[0-9])(?=.*[A-ZÑ])[a-zA-Z0-9Ññ]{6,}$/)) {
         throw new Error(
           "La contraseña debe tener al menos 6 caracteres, contener al menos un número y una letra mayúscula"
         );
       }
-    },
+    },*/
   },
   email: {
     type: String,
@@ -87,10 +87,12 @@ const UserSchema = new Schema<UserDocumentInterface>({
   gender: {
     type: String,
     enum: Object.values(Gender),
+    required: true,
     trim: true,
   },
   weight: {
     type: Number,
+    required: true,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("El peso no puede ser negativo");
@@ -99,6 +101,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   height: {
     type: Number,
+    required: true,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("La altura no puede ser negativa");
@@ -107,6 +110,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   age: {
     type: Number,
+    required: true,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("La edad no puede ser negativa");
@@ -115,6 +119,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   activityLevel: {
     type: String,
+    required: true,
     enum: Object.values(ActivityLevel),
     trim: true,
   },

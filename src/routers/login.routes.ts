@@ -1,5 +1,6 @@
 import * as express from "express";
 import jwt from 'jsonwebtoken';
+import bcrypt from "bcryptjs";
 import { User } from "../models/user.js";
 
 export const loginRouter = express.Router();
@@ -16,7 +17,10 @@ loginRouter.post('/login', async (req, res) => {
       });
     }
 
-    if (username === user.username && password === user.password) {
+    // Aplicar hash para contraseña almacenada y comprobar que coincide
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (username === user.username && isMatch) {
       const token = jwt.sign({ username }, 'secreto', { expiresIn: '1h' });
       return res.json({ token });
     } else {
