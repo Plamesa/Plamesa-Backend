@@ -9,6 +9,7 @@ import { Role } from "../models/enum/role.js";
 import { verifyJWT } from "../utils/verifyJWT.js";
 import { Allergen } from "../models/enum/allergen.js";
 import { Nutrient } from "../models/enum/nutrients.js";
+import { Menu } from "../models/menu.js";
 
 export const ingredientRouter = express.Router();
 
@@ -330,6 +331,18 @@ ingredientRouter.delete("/ingredient/:id", async (req, res) => {
         error: `No se puede eliminar el ingrediente porque está en uso por ${recipesUsingIngredient.length} receta(s)`,
       });
     }
+
+    // Eliminar el ingrediente de la lista de ingredientes excluidos de cualquier menu con este ingrediente
+    await Menu.updateMany(
+      { excludedIngredients: ingredient._id },
+      { $pull: { excludedIngredients: ingredient._id } }
+    );
+
+    // Eliminar el ingrediente de la lista de ingredientes excluidos de cualquier usuario con este ingrediente
+    await User.updateMany(
+      { excludedIngredients: ingredient._id },
+      { $pull: { excludedIngredients: ingredient._id } }
+    );
 
     // Eliminar el ingrediente de la lista de ingredientes creados del usuario
     const indexIngredient = user.createdIngredients.findIndex(ingred => {ingred._id === ingredient._id});
