@@ -5,6 +5,7 @@ import { User } from "../models/user.js";
 import { RecipesPerDay } from "../models/enum/recipesPerDay.js";
 import { Recipe, RecipeDocumentInterface } from "../models/recipe.js";
 import { Role } from "../models/enum/role.js";
+import { Ingredient, IngredientDocumentInterface } from "../models/ingredient.js";
 
 export const menuRouter = express.Router();
 
@@ -43,6 +44,21 @@ menuRouter.post("/menu", async (req, res) => {
         }
       }
     }
+
+    // Buscamos los ingredientes y las comprobamos
+    if (req.body.excludedIngredients) {
+      const ingredients: string[] = req.body.excludedIngredients;
+      for (let i = 0; i < ingredients.length; i++) {
+        const ingredientObj = await Ingredient.findById(ingredients[i]);
+
+        if (!ingredientObj) {
+          return res.status(404).send({
+            error: "Ingrediente no encontrado",
+          });
+        }
+      }
+    }
+    
 
     // Añadir menu a la BD
     req.body.ownerUser = user._id;
