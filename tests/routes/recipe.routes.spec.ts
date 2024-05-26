@@ -184,7 +184,7 @@ describe('Recipe Router', () => {
       });
 
     expect(response.status).to.equal(201);
-    expect(response.body).to.have.property('name').that.equals('Receta Actualizada');
+    expect(response.body).to.have.property('name').that.equals('receta actualizada');
   });
 
   it('Debería devolver un error si no está autorizado para actualizar', async () => {

@@ -156,7 +156,7 @@ describe('Rutas de Ingredientes', () => {
       .get(`/ingredient/${ingredienteCreado.body._id}`)
       .expect(201)
       .expect((res) => {
-        if (res.body.name !== 'Platano') {
+        if (res.body.name !== 'platano') {
           throw new Error("El nombre del ingrediente no es correcto");
         }
       });
@@ -184,7 +184,7 @@ describe('Rutas de Ingredientes', () => {
       .expect(201); // Debe actualizar con éxito
 
       expect(response.body).to.include({
-        name: "Platano Actualizado"
+        name: "platano actualizado"
       });
   });
 
@@ -234,7 +234,7 @@ describe('Rutas de Ingredientes', () => {
       .expect(201); // Debe actualizar con éxito
 
       expect(response.body).to.include({
-        name: "Platano Actualizado"
+        name: "platano actualizado"
       });
 
       const nutrientExists = response.body.nutrients.some(

@@ -29,6 +29,11 @@ ingredientRouter.post("/ingredient", async (req, res) => {
       return res.status(401).send("No autorizado"); // Usuario no autorizado
     }
 
+    // Convertir 'name' a minúsculas
+    if (req.body.name) {
+      req.body.name = req.body.name.toLowerCase();
+    }
+
     // Añadir ingrediente en la BD
     req.body.ownerUser = user._id;
     const ingredient = new Ingredient(req.body);
@@ -272,6 +277,10 @@ ingredientRouter.patch('/ingredient/:id', async (req, res) => {
       }
     }
 
+    // Convertir 'name' a minúsculas
+    if (req.body.name) {
+      req.body.name = req.body.name.toLowerCase();
+    }
     
     // Actualizar los valores del ingrediente
     const updateIngredient = await Ingredient.findOneAndUpdate (ingredient._id, req.body, {

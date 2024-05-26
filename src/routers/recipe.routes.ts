@@ -73,6 +73,11 @@ recipeRouter.post("/recipe", async (req, res) => {
       });
     }
 
+    // Convertir 'name' a minúsculas
+    if (req.body.name) {
+      req.body.name = req.body.name.toLowerCase();
+    }
+
     // Añadir Receta a la BD
     req.body.ownerUser = user._id;
     req.body.estimatedCost = estimatedCost;
@@ -250,6 +255,11 @@ recipeRouter.patch('/recipe/:id', async (req, res) => {
       req.body.estimatedCost = estimatedCost;
       req.body.allergens = allergens;
       req.body.nutrients = nutrients;
+    }
+
+    // Convertir 'name' a minúsculas
+    if (req.body.name) {
+      req.body.name = req.body.name.toLowerCase();
     }
 
     // Actualizar la receta
