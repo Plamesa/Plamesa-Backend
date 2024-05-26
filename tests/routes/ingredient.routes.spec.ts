@@ -8,6 +8,7 @@ import { User } from '../../src/models/user.js';
 import { FoodGroup } from '../../src/models/enum/foodGroup.js';
 import { Nutrient, NutrientsTypes } from '../../src/models/enum/nutrients.js';
 import { ActivityLevel, Gender } from '../../src/models/enum/userData.js';
+import { Role } from '../../src/models/enum/role.js';
 
 let token: string;
 let createdIngredientId: string; // Almacena el ID del ingrediente creado
@@ -59,7 +60,7 @@ describe('Rutas de Ingredientes', () => {
       name: 'Test User',
       password: 'Test1234',
       email: 'testRoutes.user@example.com',
-      role: 'Usuario regular'
+      role: Role.UsuarioRegular
     });
     const saltRounds = 10;
     user.password = await bcrypt.hash(user.password, saltRounds);
