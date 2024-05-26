@@ -10,10 +10,10 @@ export const verifyJWT = async (token: string): Promise<UserDocumentInterface> =
     // Decodificar el token JWT
     const decodedToken = jwt.verify(token, SECRET_KEY) as any;
 
-    const usernameFromToken = decodedToken.username;
+    const userIDFromToken = decodedToken.userID;
 
     // Buscar el usuario en la base de datos usando el nombre de usuario del token
-    const user = await User.findOne({ username: usernameFromToken });
+    const user = await User.findOne({ _id: userIDFromToken });
 
     if (!user) {
       throw new Error("Usuario no encontrado");

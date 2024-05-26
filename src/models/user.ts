@@ -78,6 +78,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   diet: {
     type: String,
     enum: Object.values(Diet),
+    default: Diet.Vacio,
     trim: true,
   },
   excludedIngredients: {
@@ -87,12 +88,12 @@ const UserSchema = new Schema<UserDocumentInterface>({
   gender: {
     type: String,
     enum: Object.values(Gender),
-    required: true,
+    default: Gender.Vacio,
     trim: true,
   },
   weight: {
     type: Number,
-    required: true,
+    default: 0,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("El peso no puede ser negativo");
@@ -101,7 +102,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   height: {
     type: Number,
-    required: true,
+    default: 0,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("La altura no puede ser negativa");
@@ -110,7 +111,7 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   age: {
     type: Number,
-    required: true,
+    default: 0,
     validate: (value: number) => {
       if (value < 0) {
         throw new Error("La edad no puede ser negativa");
@@ -119,8 +120,8 @@ const UserSchema = new Schema<UserDocumentInterface>({
   },
   activityLevel: {
     type: String,
-    required: true,
     enum: Object.values(ActivityLevel),
+    default: ActivityLevel.Vacio,
     trim: true,
   },
   createdIngredients: {

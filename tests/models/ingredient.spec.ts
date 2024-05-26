@@ -9,39 +9,34 @@ import { NutrientsTypes } from '../../src/models/enum/nutrients.js';
 import { ActivityLevel, Gender } from '../../src/models/enum/userData.js';
 
 let tokenModel: string;
-
-beforeEach(async () => {
-  await Ingredient.deleteMany();
-  await User.deleteMany();
-
-  const user = new User({
-    username: 'testUserModel',
-    name: 'Test User',
-    password: 'Test1234',
-    email: 'testModel.user@example.com',
-    role: 'Usuario regular',
-    gender: Gender.Masculino,
-    weight: 15,
-    height: 15,
-    age: 15,
-    activityLevel: ActivityLevel.Activo
-  });
-  const saltRounds = 10;
-  user.password = await bcrypt.hash(user.password, saltRounds);
-
-  await user.save();
-
-  const loginResponse = await request(app)
-    .post('/login')
-    .send({
-      username: 'testUserModel',
-      password: 'Test1234',
-    });
-
-    tokenModel = loginResponse.body.token;
-});
-
 describe('Modelo Ingredient', () => {
+  beforeEach(async () => {
+    await Ingredient.deleteMany();
+    await User.deleteMany();
+  
+    const user = new User({
+      username: 'testUserModel',
+      name: 'Test User',
+      password: 'Test1234',
+      email: 'testModel.user@example.com',
+      role: 'Usuario regular'
+    });
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(user.password, saltRounds);
+  
+    await user.save();
+  
+    const loginResponse = await request(app)
+      .post('/login')
+      .send({
+        username: 'testUserModel',
+        password: 'Test1234',
+      });
+  
+      tokenModel = loginResponse.body.token;
+  });
+
+
   it('Debe recibir un error, el nombre es obligatorio', async () => {
     await request(app)
       .post('/ingredient')
@@ -89,9 +84,9 @@ describe('Modelo Ingredient', () => {
       .send({
         name: 'Platano',
         estimatedCost: 5.2,
-        foodGroup: 'InvalidGroup', // Grupo alimenticio no válido
+        foodGroup: 'InvalidGroup',
       })
-      .expect(500); // Debe fallar porque el grupo alimenticio es incorrecto
+      .expect(500);
   });
 
   it('Debe recibir un error, un alérgeno no está en el enum', async () => {
@@ -165,7 +160,7 @@ describe('Modelo Ingredient', () => {
       .expect(500)
   });
 
-  /*it('Debe crear un ingrediente correctamente con todos los nutrientes obligatorios', async () => {
+  it('Debe crear un ingrediente correctamente con todos los nutrientes obligatorios', async () => {
     const response = await request(app)
       .post('/ingredient')
       .set('Authorization', `Bearer ${tokenModel}`) // Usar el token
@@ -205,5 +200,5 @@ describe('Modelo Ingredient', () => {
         ],
       })
       .expect(201); // Debe crear correctamente con todos los nutrientes obligatorios
-  });*/
+  });
 });

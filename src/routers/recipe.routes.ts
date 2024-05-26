@@ -136,7 +136,7 @@ recipeRouter.get("/recipe/:id", async (req, res) => {
         populate: {
           path: "ingredientID",
           model: "Ingredient",
-          select: "name",
+          select:["name", "unit"],
         },
       },
       {

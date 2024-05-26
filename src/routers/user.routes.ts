@@ -32,7 +32,7 @@ userRouter.post("/user", async (req, res) => {
 
 
 /** Obtener todos los usuarios solo role administrador */
-userRouter.get("/user", async (req, res) => {
+userRouter.get("/user/all", async (req, res) => {
   try {
     // Existe token de autorizacion
     /*const authHeader = req.headers['authorization'];
@@ -84,8 +84,8 @@ userRouter.get("/user", async (req, res) => {
 });
 
 
-/** Obtener un usuario por id*/
-userRouter.get("/user/:id", async (req, res) => {
+/** Obtener un usuario por el token*/
+userRouter.get("/user", async (req, res) => {
   try {
     // Existe token de autorizacion
     const authHeader = req.headers['authorization'];
@@ -94,8 +94,14 @@ userRouter.get("/user/:id", async (req, res) => {
       return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
     }
 
+    // Verificar token, buscar usuario
+    const userToShow = await verifyJWT(token);
+    if (!userToShow) {
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
+    }
+
     // Buscar el usuario
-    const userToShow = await User.findOne({_id: req.params.id}).populate([
+    await userToShow.populate([
       {
         path: "excludedIngredients",
         model: "Ingredient",
@@ -118,18 +124,10 @@ userRouter.get("/user/:id", async (req, res) => {
       }
     ])
     if (!userToShow) {
-      return res.status(404).send("Menu no encontrado");
+      return res.status(404).send("Usuario no encontrado");
     }
 
-    // Verificar token, buscar usuario y comprobar role de admin
-    const user = await verifyJWT(token);
-    if (!user) {
-      return res.status(401).send("No autorizado"); // Usuario no autorizado
-    }
-    if (user.role != Role.Admin && user._id.toString() !== userToShow._id.toString()) {
-      return res.status(401).send("No autorizado para ver el usuario"); // Usuario no autorizado
-    }
-
+    userToShow.password = '';
     return res.status(200).send(userToShow);
   } catch (error) {
     return res.status(500).send(error);
@@ -140,7 +138,7 @@ userRouter.get("/user/:id", async (req, res) => {
 
 
 /** Actualizar un usuario a través de su id */
-userRouter.patch('/user/:id', async (req, res) => {   
+userRouter.patch('/user', async (req, res) => {   
   try {
     // Existe token de autorizacion
     const authHeader = req.headers['authorization'];
@@ -150,11 +148,9 @@ userRouter.patch('/user/:id', async (req, res) => {
     }
 
     // Buscar el usuario
-    const userToUpdate = await User.findOne({_id: req.params.id});
+    const userToUpdate = await verifyJWT(token);
     if (!userToUpdate) {
-      return res.status(404).send({
-        error: "Usuario no encontrado"
-      });
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
     }
 
     // Verificar si el usuario que intenta actualizar es administrador o el propietario
@@ -231,7 +227,7 @@ userRouter.patch('/user/:id', async (req, res) => {
 
 
 /** Eliminar un usuario de la BD por id */
-userRouter.delete("/user/:id", async (req, res) => {
+userRouter.delete("/user", async (req, res) => {
   try {
     // Existe token de autorizacion
     const authHeader = req.headers['authorization'];
@@ -241,9 +237,9 @@ userRouter.delete("/user/:id", async (req, res) => {
     }
 
     // Buscar el usuario
-    const userToDelete = await User.findOne({_id: req.params.id})
+    const userToDelete = await verifyJWT(token);
     if (!userToDelete) {
-      return res.status(404).send("Usuario no encontrado");
+      return res.status(401).send("No autorizado"); // Usuario no autorizado
     }
     
     // Verificar si el usuario que intenta eliminar es administrador o el propietario
@@ -314,7 +310,7 @@ userRouter.delete("/user/:id", async (req, res) => {
 
     // Eliminar el usuario
     const deletedUser = await User.findOneAndDelete({
-      _id: req.params.id,
+      _id: userToDelete._id,
     });
 
     if (deletedUser) {

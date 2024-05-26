@@ -21,7 +21,8 @@ loginRouter.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (username === user.username && isMatch) {
-      const token = jwt.sign({ username }, 'secreto', { expiresIn: '1h' });
+      const userID = user._id;
+      const token = jwt.sign({ userID }, 'secreto', { expiresIn: '1h' });
       return res.json({ token });
     } else {
       return res.status(401).json({ message: 'Credenciales inválidas' });

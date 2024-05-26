@@ -49,79 +49,74 @@ const ingredientToCreate = {
 }
 
 // Antes de cada prueba, crear un usuario y obtener un token
-beforeEach(async () => {
-  await Ingredient.deleteMany();
-  await User.deleteMany();
-
-  const user = new User({
-    username: 'testUserRoutes',
-    name: 'Test User',
-    password: 'Test1234',
-    email: 'testRoutes.user@example.com',
-    role: 'Usuario regular',
-    gender: Gender.Masculino,
-    weight: 15,
-    height: 15,
-    age: 15,
-    activityLevel: ActivityLevel.Activo
-  });
-  const saltRounds = 10;
-  user.password = await bcrypt.hash(user.password, saltRounds);
-
-  await user.save();
-
-  const loginResponse = await request(app)
-    .post('/login')
-    .send({
-      username: 'testUserRoutes',
-      password: 'Test1234',
-    });
-
-  token = loginResponse.body.token; // Almacena el token para usarlo en las pruebas posteriores
-
-  // Guardar un ingrediente directamente en la base de datos
-  const ingredient = new Ingredient({
-    name: 'Platano Rojo',
-    estimatedCost: 5.2,
-    foodGroup: FoodGroup.Frutas,
-    nutrients: [
-      {
-        name: NutrientsTypes.Energia,
-        amount: 200,
-      },
-      {
-        name: NutrientsTypes.Proteinas,
-        amount: 50,
-      },
-      {
-        name: NutrientsTypes.Carbohidratos,
-        amount: 100,
-      },
-      {
-        name: NutrientsTypes.GrasaTotal,
-        amount: 150,
-      },
-      {
-        name: NutrientsTypes.GrasaSaturada,
-        amount: 250,
-      },
-      {
-        name: NutrientsTypes.Sal,
-        amount: 58,
-      },
-      {
-        name: NutrientsTypes.Azucar,
-        amount: 159,
-      },
-    ],
-    ownerUser: user._id,
-  });
-
-  await ingredient.save(); // Guardar el ingrediente en la base de datos
-  createdIngredientId = ingredient._id.toString(); // Almacenar el ID del ingrediente creado
-});
-
 describe('Rutas de Ingredientes', () => {
+  beforeEach(async () => {
+    await Ingredient.deleteMany();
+    await User.deleteMany();
+  
+    const user = new User({
+      username: 'testUserRoutes',
+      name: 'Test User',
+      password: 'Test1234',
+      email: 'testRoutes.user@example.com',
+      role: 'Usuario regular'
+    });
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(user.password, saltRounds);
+  
+    await user.save();
+  
+    const loginResponse = await request(app)
+      .post('/login')
+      .send({
+        username: 'testUserRoutes',
+        password: 'Test1234',
+      });
+  
+    token = loginResponse.body.token; 
+  
+    const ingredient = new Ingredient({
+      name: 'Platano Rojo',
+      estimatedCost: 5.2,
+      foodGroup: FoodGroup.Frutas,
+      nutrients: [
+        {
+          name: NutrientsTypes.Energia,
+          amount: 200,
+        },
+        {
+          name: NutrientsTypes.Proteinas,
+          amount: 50,
+        },
+        {
+          name: NutrientsTypes.Carbohidratos,
+          amount: 100,
+        },
+        {
+          name: NutrientsTypes.GrasaTotal,
+          amount: 150,
+        },
+        {
+          name: NutrientsTypes.GrasaSaturada,
+          amount: 250,
+        },
+        {
+          name: NutrientsTypes.Sal,
+          amount: 58,
+        },
+        {
+          name: NutrientsTypes.Azucar,
+          amount: 159,
+        },
+      ],
+      ownerUser: user._id,
+    });
+  
+    await ingredient.save(); 
+    createdIngredientId = ingredient._id.toString();
+  });
+
+
   it('Debe fallar al crear ingrediente si no se proporciona token', async () => {
     await request(app)
       .post('/ingredient')
@@ -166,6 +161,12 @@ describe('Rutas de Ingredientes', () => {
       });
   });
 
+  it('Debe fallar al obtener un ingrediente por ID inexistente', async () => {
+    await request(app)
+      .get('/ingredient/605c72ef9e7a9f30d8a1e123')
+      .expect(404);
+  });
+
   it('Debe actualizar un ingrediente con permisos correctos', async () => {
     const ingredienteCreado = await request(app)
       .post('/ingredient')
@@ -186,7 +187,7 @@ describe('Rutas de Ingredientes', () => {
       });
   });
 
-  it('Debe actualizar un ingrediente con permisos correctos', async () => {
+  it('Debe actualizar un ingrediente con permisos correctos incluyendo nutrientes', async () => {
     const ingredienteCreado = await request(app)
       .post('/ingredient')
       .set('Authorization', `Bearer ${token}`)
@@ -270,5 +271,57 @@ describe('Rutas de Ingredientes', () => {
       .delete(`/ingredient/${ingredienteCreado.body._id}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200); // Debe eliminar con éxito
+  });
+
+  it('Debe fallar al eliminar un ingrediente inexistente', async () => {
+    await request(app)
+      .delete('/ingredient/605c72ef9e7a9f30d8a1e123') // ID inexistente
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
+  });
+
+  it('Debe fallar al eliminar un ingrediente si no se proporciona token', async () => {
+    const ingredienteCreado = await request(app)
+      .post('/ingredient')
+      .set('Authorization', `Bearer ${token}`)
+      .send(ingredientToCreate)
+      .expect(201);
+
+    await request(app)
+      .delete(`/ingredient/${ingredienteCreado.body._id}`)
+      .expect(401);
+  });
+
+  it('Debe fallar al actualizar un ingrediente inexistente', async () => {
+    await request(app)
+      .patch('/ingredient/605c72ef9e7a9f30d8a1e123') 
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Platano Actualizado'
+      })
+      .expect(404);
+  });
+
+  it('Debe fallar al crear un ingrediente con datos incompletos', async () => {
+    await request(app)
+      .post('/ingredient')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Platano'
+        // Falta estimatedCost y foodGroup
+      })
+      .expect(500);
+  });
+
+  it('Debe fallar al crear un ingrediente con un costo estimado negativo', async () => {
+    await request(app)
+      .post('/ingredient')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Platano',
+        estimatedCost: -5.2, // Costo estimado negativo
+        foodGroup: FoodGroup.Frutas,
+      })
+      .expect(500);
   });
 });
