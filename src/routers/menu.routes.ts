@@ -233,7 +233,7 @@ menuRouter.patch('/menu/:id', async (req, res) => {
     }
 
     // Verificar opciones de actualizado permitidas
-    const allowedUpdates = ['numberServices'];
+    const allowedUpdates = ['title'];
     const actualUpdates = Object.keys(req.body);
     const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
     

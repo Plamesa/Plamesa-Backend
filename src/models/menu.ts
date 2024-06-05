@@ -7,6 +7,7 @@ import { IngredientDocumentInterface } from "./ingredient.js";
 
 /** Definición de la interfaz de documento de menu */
 export interface MenuDocumentInterface extends Document {
+  title: string;
   numberDays: number;
   numberServices: number;
   recipesPerDay: RecipesPerDay[];
@@ -20,6 +21,10 @@ export interface MenuDocumentInterface extends Document {
 
 /** Definición del esquema de Mongoose para la menu */
 const MenuSchema = new Schema<MenuDocumentInterface>({
+  title: {
+    type: String,
+    trim: true,
+  },
   numberDays: {
     type: Number,
     required: true,

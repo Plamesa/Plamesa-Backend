@@ -4,7 +4,7 @@ import { Allergen } from "../models/enum/allergen.js";
 import { FoodType } from "../models/enum/FoodType.js";
 import { ActivityLevel, Gender } from "../models/enum/userData.js";
 import { RecipesPerDay } from "../models/enum/recipesPerDay.js";
-import { MenuDocumentInterface } from "../models/menu.js";
+import { Menu, MenuDocumentInterface } from "../models/menu.js";
 
 export const recipeSearch = express.Router();
 
@@ -140,7 +140,10 @@ recipeSearch.post('/planner', async (req, res) => {
   try {
     const plan = await generateMealPlan(excludedIngredients, allergies,  numberDays);
 
-    const menu = {
+    const today = new Date().toLocaleDateString();
+
+    const menu = await new Menu({
+      title: today,
       numberDays: numberDays,
       numberServices: numberServices,
       recipesPerDay: plan,
@@ -148,7 +151,25 @@ recipeSearch.post('/planner', async (req, res) => {
       allergies: allergies,
       diet: req.body.diet,
       excludedIngredients: excludedIngredients,
-    }
+    })
+    
+    await menu.populate({
+      path: "recipesPerDay",
+      populate: [
+        {
+          path: "recipeStarterID",
+          select: "name",
+        },
+        {
+          path: "recipeMainDishID",
+          select: "name",
+        },
+        {
+          path: "recipeDessertID",
+          select: "name",
+        }
+      ]
+    });
     return res.json(menu);
   } catch (error) {
     console.error('Error generando plan:', error);
