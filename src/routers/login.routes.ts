@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from "bcryptjs";
 import { User } from "../models/user.js";
 
+const SECRET_KEY = process.env.SECRET_KEY || '';
+
 export const loginRouter = express.Router();
 
 loginRouter.post('/login', async (req, res) => {
@@ -22,7 +24,7 @@ loginRouter.post('/login', async (req, res) => {
 
     if (username === user.username && isMatch) {
       const userID = user._id;
-      const token = jwt.sign({ userID }, 'secreto', { expiresIn: '1h' });
+      const token = jwt.sign({ userID }, SECRET_KEY, { expiresIn: '1h' });
       return res.json({ token });
     } else {
       return res.status(401).json({ message: 'Credenciales inválidas' });

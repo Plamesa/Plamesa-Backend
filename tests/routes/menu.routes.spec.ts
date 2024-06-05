@@ -225,6 +225,7 @@ describe('Menu Router', () => {
 
   it('Debería actualizar un menú por ID', async () => {
     const menu = new Menu({
+      title: 'Titulo',
       numberDays: 1,
       numberServices: 3,
       recipesPerDay: [
@@ -249,11 +250,11 @@ describe('Menu Router', () => {
       .patch(`/menu/${createdMenuId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({
-        numberServices: 5,
+        title: 'Titulo Cambiado',
       });
 
     expect(response.status).to.equal(201);
-    expect(response.body).to.have.property('numberServices').that.equals(5);
+    expect(response.body).to.have.property('title').that.equals('Titulo Cambiado');
   });
 
   it('Debería devolver un error si no está autorizado para actualizar', async () => {

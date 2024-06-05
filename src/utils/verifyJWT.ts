@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User, UserDocumentInterface } from '../models/user.js';
 
 // Clave secreta para verificar JWT
-const SECRET_KEY = 'secreto';
+const SECRET_KEY = process.env.SECRET_KEY || '';
 
 // Función para verificar si el usuario es administrador
 export const verifyJWT = async (token: string): Promise<UserDocumentInterface> => {
