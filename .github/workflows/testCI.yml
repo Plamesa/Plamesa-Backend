@@ -28,7 +28,7 @@ jobs:
     - name: Print Environment Variables
       run: printenv | grep MONGODB_URI
       env:
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        MONGODB_URI: ${{ secrets.TEST.MONGODB_URI }}
     - run: env-cmd -e test npm run continuosTest
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
