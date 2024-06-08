@@ -11,6 +11,7 @@
     "dev": "tsc-watch --onSuccess \"env-cmd -f ./config/dev.env node dist/index.js\"",
     "devAtlas": "tsc-watch --onSuccess \"env-cmd -f ./config/atlas.env node dist/index.js\"",
     "test": "env-cmd -f ./config/test.env mocha --exit",
+    "continuosTest": "mocha --exit",
     "coverage": "c8 npm test && c8 report --reporter=lcov",
     "doc": "typedoc"
   },
