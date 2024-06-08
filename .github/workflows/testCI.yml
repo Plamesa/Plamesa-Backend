@@ -25,7 +25,7 @@ jobs:
         cache: 'npm'
     - run: npm i
     - run: npm run build --if-present
-    - run: npm continuosTest
+    - run: npm run continuosTest
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
