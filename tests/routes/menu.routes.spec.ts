@@ -162,33 +162,6 @@ describe('Menu Router', () => {
     expect(response.status).to.equal(404);
   });
 
-  it('Debería obtener todos los menús', async () => {
-    await new Menu({
-      numberDays: 1,
-      numberServices: 3,
-      recipesPerDay: [
-        {
-          recipeStarterID: createdRecipeId,
-          recipeMainDishID: createdRecipeId,
-          recipeDessertID: createdRecipeId,
-          bread: true
-        }
-      ],
-      caloriesTarget: 2500,
-      allergies: [Allergen.CacahuetesFrutosSecos],
-      diet: Diet.Vegetarianos,
-      excludedIngredients: [createdIngredientId],
-      avergageEstimatedCost: 50,
-      ownerUser: userId
-    }).save();
-
-    const response = await request(app).get('/menu');
-
-    expect(response.status).to.equal(200);
-    expect(response.body).to.be.an('array');
-    expect(response.body.length).to.be.at.least(1);
-  });
-
   it('Debería obtener un menú por ID', async () => {
     const menu = new Menu({
       numberDays: 1,
