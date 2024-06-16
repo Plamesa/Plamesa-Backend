@@ -17,7 +17,7 @@ plannerRouter.post('/planner', async (req, res) => {
   try {
     const plan = await generateMealPlan(excludedIngredients, allergies,  numberDays);
 
-    const today = new Date().toLocaleDateString();
+    const today = new Date().toLocaleDateString('es-ES');
 
     const menu = await new Menu({
       title: today,
