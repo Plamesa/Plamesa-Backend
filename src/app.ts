@@ -7,7 +7,7 @@ import { recipeRouter } from "./routers/recipe.routes.js";
 import { userRouter } from "./routers/user.routes.js";
 import { loginRouter } from "./routers/login.routes.js";
 import { menuRouter } from "./routers/menu.routes.js";
-import { recipeSearch } from "./routers/recipeSearch.routes.js";
+import { plannerRouter } from "./routers/planner.routes.js";
 
 export const app = express();
 app.use(express.json());
@@ -17,5 +17,5 @@ app.use(recipeRouter);
 app.use(menuRouter);
 app.use(userRouter);
 app.use(loginRouter);
-app.use(recipeSearch);
+app.use(plannerRouter);
 app.use(defaultRouter);

@@ -353,3 +353,54 @@ recipeRouter.delete("/recipe/:id", async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
+
+recipeRouter.post('/recipeSearchPerIngredients', async (req, res) => {
+  try {
+    const ingredientsIDs = req.body.ingredients;
+    let recipes = [];
+
+    // Obtener todas las recetas que contienen al menos uno de los ingredientes
+    const allMatchingRecipes = await Recipe.find({
+      'ingredients.ingredientID': { $in: ingredientsIDs }
+    })
+
+    // Contar numero de ingredientes presentes en cada receta
+    const recipesWithMatchCount = allMatchingRecipes.map(recipe => {
+      const matchCount = recipe.ingredients.filter(ingredient => 
+        ingredientsIDs.includes(ingredient.ingredientID.toString())
+      ).length;
+      return { recipe, matchCount };
+    });
+
+    // Ordenar las recetas por la cantidad de ingredientes coincidentes (de mayor a menor)
+    recipesWithMatchCount.sort((a, b) => b.matchCount - a.matchCount);
+    recipes = recipesWithMatchCount.slice(0, 5).map(item => item.recipe);
+
+    // Enviar respuesta en formato JSON
+    await Promise.all(
+      recipes.map(recipe => 
+        recipe.populate([
+          {
+            path: "ingredients",
+            populate: {
+              path: "ingredientID",
+              model: "Ingredient",
+              select: ["name", "unit"],
+            },
+          },
+          {
+            path: "ownerUser",
+            model: "User",
+            select: "username"
+          }
+        ])
+      )
+    );
+
+    return res.json({ recipes });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
