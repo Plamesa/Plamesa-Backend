@@ -36,7 +36,7 @@ userRouter.post("/user", async (req, res) => {
 userRouter.get("/user/all", async (req, res) => {
   try {
     // Existe token de autorizacion
-    /*const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
       return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
@@ -49,7 +49,7 @@ userRouter.get("/user/all", async (req, res) => {
     }
     if (user.role != Role.Admin ) {
       return res.status(401).send("No autorizado para ver todos los usuarios"); // Usuario no autorizado
-    }*/
+    }
 
     const users = await User.find().populate([
       {

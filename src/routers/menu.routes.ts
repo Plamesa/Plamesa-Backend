@@ -90,7 +90,7 @@ menuRouter.post("/menu", async (req, res) => {
 menuRouter.get("/menu", async (req, res) => {
   try {
     // Existe token de autorizacion
-    /*const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
       return res.sendStatus(401); // Si no hay token, devolver un error de no autorizado
@@ -103,7 +103,7 @@ menuRouter.get("/menu", async (req, res) => {
     }
     if (user.role != Role.Admin ) {
       return res.status(401).send("No autorizado para ver todos los menus"); // Usuario no autorizado
-    }*/
+    }
 
     // Buscar menus
     const menus = await Menu.find();
