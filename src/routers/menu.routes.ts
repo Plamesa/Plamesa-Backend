@@ -292,8 +292,10 @@ menuRouter.delete("/menu/:id", async (req, res) => {
     }
 
     // Eliminar el menu de la lista de menus guardados del usuario
-    const indexMenu = user.savedMenus.findIndex(men => {men._id === menu._id});
-    user.savedMenus.splice(indexMenu, 1);
+    const indexMenu = user.savedMenus.findIndex(men => men._id.equals(menu._id));
+    if (indexMenu !== -1) {
+      user.savedMenus.splice(indexMenu, 1);
+    }
 
     await User.findOneAndUpdate(user._id, {savedMenus: user.savedMenus}, {
       new: true,

@@ -354,8 +354,10 @@ ingredientRouter.delete("/ingredient/:id", async (req, res) => {
     );
 
     // Eliminar el ingrediente de la lista de ingredientes creados del usuario
-    const indexIngredient = user.createdIngredients.findIndex(ingred => {ingred._id === ingredient._id});
-    user.createdIngredients.splice(indexIngredient, 1);
+    const indexIngredient = user.createdIngredients.findIndex(ingred => ingred._id.equals(ingredient._id));
+    if (indexIngredient !== -1) {
+      user.createdIngredients.splice(indexIngredient, 1);
+    }
 
     await User.findOneAndUpdate(user._id, {createdIngredients: user.createdIngredients}, {
       new: true,

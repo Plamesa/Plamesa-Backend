@@ -332,8 +332,10 @@ recipeRouter.delete("/recipe/:id", async (req, res) => {
     );
 
     // Eliminar la receta de la lista de recetas creadas del usuario
-    const indexRecipe = user.createdRecipes.findIndex(recip => {recip._id === recipe._id});
-    user.createdRecipes.splice(indexRecipe, 1);
+    const indexRecipe = user.createdRecipes.findIndex(recip => recip._id.equals(recipe._id));
+    if (indexRecipe !== -1) {
+      user.createdRecipes.splice(indexRecipe, 1);
+    }
 
     await User.findOneAndUpdate(user._id, {createdRecipes: user.createdRecipes}, {
       new: true,
