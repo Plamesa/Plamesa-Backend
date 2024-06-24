@@ -12,7 +12,7 @@
     "devAtlas": "tsc-watch --onSuccess \"env-cmd -f ./config/atlas.env node dist/index.js\"",
     "test": "env-cmd -f ./config/test.env mocha --exit",
     "continuosTest": "mocha --exit",
-    "coverage": "c8 npm test && c8 report --reporter=lcov",
+    "coverage": "c8 npm continuosTest && c8 report --reporter=lcov",
     "doc": "typedoc"
   },
   "keywords": [],

@@ -14,14 +14,22 @@ jobs:
     steps:
     - name: Cloning repo
       uses: actions/checkout@v3
+      
     - name: Use Node.js 19.x
       uses: actions/setup-node@v3
       with:
         node-version: 19.x
+
     - name: Installing dependencies
       run: npm i
+
     - name: Generating coverage information
       run: npm run coverage
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2
       with:
