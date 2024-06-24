@@ -18,15 +18,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+
     - run: npm i
+
     - run: npm run build --if-present
-    - run: npm run continuosTest
+    
+    - name: Generating coverage information
+      run: npm run coverage
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
+    - name: Coveralls GitHub Action
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
